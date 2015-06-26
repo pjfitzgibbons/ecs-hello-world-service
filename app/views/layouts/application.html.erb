@@ -2,13 +2,21 @@
 <html>
 <head>
   <title>EcsHelloWorld</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
 </head>
 <body>
 
 <%= yield %>
+
+</footer>
+<h2>Footer</h2>
+
+<div>
+  special-value: <%= ENV['SPECIAL_VALUE'] %>
+</div>
+</footer>
 
 </body>
 </html>

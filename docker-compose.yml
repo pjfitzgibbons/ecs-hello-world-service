@@ -1,11 +1,63 @@
-client:
-  build: .
-  env_file:
-    - .env
-  command: bundle exec rake hello:client['hello world!']
+db:
+  build: config/docker/db
+  ports:
+    - 25432:5432
+  volumes:
+    - ~/postgres_data:/var/lib/pgdata
+
+dbgis:
+  build: config/docker/dbgis
+  ports:
+    - 35432:5432
 
 server:
   build: .
   env_file:
     - .env
-  command: bundle exec rake hello:server
+  ports:
+    - 3000:3000
+  command: bundle exec rails s --binding 0.0.0.0
+  volumes:
+    - ~/.ssh/id_rsa.pub:/root/.ssh/authorized_keys:ro
+    - .:/myapp
+  links:
+    - db
+
+kibana:
+  image: digitalwonderland/kibana
+  links:
+    - elasticsearch
+  ports:
+    - 5601:5601
+
+elasticsearch:
+  image: elasticsearch
+  ports:
+    - 9200:9200
+
+redis:
+  image: redis
+  ports:
+    - 6379:6379
+
+logstash:
+  image: logstash
+  command: 'logstash -f /logstash.conf -v'
+  volumes:
+    - ./logstash.conf:/logstash.conf
+  links:
+    - redis
+    - elasticsearch
+
+logspout:
+  image: rtoma/logspout-redis-logstash
+  command: 'redis://redis'
+  environment:
+    - DEBUG=true
+#    - REDIS_PASSWORD=secret
+    - REDIS_KEY=logstash
+    - REDIS_DOCKER_HOST=macbookpro
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+  links:
+    - redis
